@@ -1,5 +1,5 @@
 const CommonSelectors = require('../lib/common_selectors');
-const Polygon = require('../feature_types/polygon');
+const Circle = require('../feature_types/circle');
 const doubleClickZoom = require('../lib/double_click_zoom');
 const Constants = require('../constants');
 const isEventAtCoordinates = require('../lib/is_event_at_coordinates');
@@ -44,7 +44,7 @@ function distance(lat1, lon1, lat2, lon2) {
 
 module.exports = function(ctx) {
 
-  const polygon = new Polygon(ctx, {
+  const polygon = new Circle(ctx, {
     type: Constants.geojsonTypes.FEATURE,
     properties: {},
     geometry: {
@@ -55,7 +55,6 @@ module.exports = function(ctx) {
   let currentVertexPosition = 0;
 
   if (ctx._test) ctx._test.polygon = polygon;
-
   ctx.store.add(polygon);
 
   return {
@@ -66,7 +65,9 @@ module.exports = function(ctx) {
       ctx.ui.setActiveButton(Constants.types.POLYGON);
       this.on('mousemove', CommonSelectors.true, e => {
         if (currentVertexPosition === 0) return
-        const coords = createGeoJSONCircle(polygon.center, distance(polygon.center[1], polygon.center[0], e.lngLat.lat, e.lngLat.lng))
+        const radius = distance(polygon.center[1], polygon.center[0], e.lngLat.lat, e.lngLat.lng)
+        const coords = createGeoJSONCircle(polygon.center, radius)
+        polygon.radius = radius
         polygon.setCoordinates([coords])
         currentVertexPosition = coords.length
         if (CommonSelectors.isVertex(e)) {
@@ -152,20 +153,6 @@ module.exports = function(ctx) {
       if (coordinateCount > 3) {
         return callback(geojson);
       }
-
-      // If we've only drawn two positions (plus the closer),
-      // make a LineString instead of a Polygon
-      const lineCoordinates = [
-        [geojson.geometry.coordinates[0][0][0], geojson.geometry.coordinates[0][0][1]], [geojson.geometry.coordinates[0][1][0], geojson.geometry.coordinates[0][1][1]]
-      ];
-      return callback({
-        type: Constants.geojsonTypes.FEATURE,
-        properties: geojson.properties,
-        geometry: {
-          coordinates: lineCoordinates,
-          type: Constants.geojsonTypes.LINE_STRING
-        }
-      });
     },
     trash() {
       ctx.store.delete([polygon.id], { silent: true });
