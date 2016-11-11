@@ -144,8 +144,15 @@ module.exports = function(ctx, opts) {
           lng: e.lngLat.lng - dragMoveLocation.lng,
           lat: e.lngLat.lat - dragMoveLocation.lat
         };
-        if (selectedCoordPaths.length > 0) dragVertex(e, delta);
-        else dragFeature(e, delta);
+
+        var constrainedDelta = constrainFeatureMovement(selectedCoordPoints, delta);
+
+        for (var i = 0; i < selectedCoords.length; i++) {
+          var coord = selectedCoords[i];
+          feature.updateCoordinate(selectedCoordPaths[i],
+            coord[0] + constrainedDelta.lng,
+            coord[1] + constrainedDelta.lat);
+        }
 
         dragMoveLocation = e.lngLat;
       });

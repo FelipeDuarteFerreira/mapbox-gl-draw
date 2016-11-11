@@ -67,7 +67,7 @@ module.exports = function(ctx) {
         if (currentVertexPosition === 0) return
         const radius = distance(polygon.center[1], polygon.center[0], e.lngLat.lat, e.lngLat.lng)
         const coords = createGeoJSONCircle(polygon.center, radius)
-        polygon.radius = radius
+        polygon.radius = [e.lngLat.lng, e.lngLat.lat]
         polygon.setCoordinates([coords])
         currentVertexPosition = coords.length
         if (CommonSelectors.isVertex(e)) {
