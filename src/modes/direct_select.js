@@ -103,6 +103,7 @@ module.exports = function(ctx, opts) {
           lng: e.lngLat.lng - dragMoveLocation.lng,
           lat: e.lngLat.lat - dragMoveLocation.lat
         };
+
         var constrainedDelta = constrainFeatureMovement(selectedCoordPoints, delta);
 
         for (var i = 0; i < selectedCoords.length; i++) {
