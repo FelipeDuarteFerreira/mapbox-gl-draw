@@ -29,5 +29,9 @@ module.exports = function(features, delta) {
     }
 
     feature.incomingCoords(nextCoordinates);
+
+    if (feature.properties.circle) {
+      feature.updateCenter(constrainedDelta)
+    }
   });
 };

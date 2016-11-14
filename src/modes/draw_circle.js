@@ -4,49 +4,16 @@ const doubleClickZoom = require('../lib/double_click_zoom');
 const Constants = require('../constants');
 const isEventAtCoordinates = require('../lib/is_event_at_coordinates');
 const createVertex = require('../lib/create_vertex');
-
-var createGeoJSONCircle = function(center, km, points = 128) {
-   const coords = {
-     latitude: center[1],
-     longitude: center[0]
-   };
-
-   const ret = [];
-   const distanceX = km / (110.574 * Math.cos(coords.latitude * Math.PI / 180));
-   const distanceY = km / 110.574;
-
-   let theta, x, y;
-   for (var i = 0; i < points; i++) {
-     theta = (i / points) * (2 * Math.PI);
-     x = distanceX * Math.cos(theta);
-     y = distanceY * Math.sin(theta);
-     ret.push([
-       coords.longitude + x,
-       coords.latitude + y
-     ]);
-   }
-   ret.push(ret[0]);
-   return ret
-};
-
-function distance(lat1, lon1, lat2, lon2) {
-	const radlat1 = Math.PI * lat1 / 180
-	const radlat2 = Math.PI * lat2 / 180
-	const theta = lon1 - lon2
-	const radtheta = Math.PI * theta / 180
-	let dist = Math.sin(radlat1) * Math.sin(radlat2) + Math.cos(radlat1) * Math.cos(radlat2) * Math.cos(radtheta);
-	dist = Math.acos(dist)
-	dist = dist * 180 / Math.PI
-	dist = dist * 60 * 1.1515
-  dist = dist * 1.609344
-	return dist
-}
+const distance = require("../lib/geo_distance");
+const createGeoJSONCircle = require("../lib/create_geo_json_circle")
 
 module.exports = function(ctx) {
 
   const polygon = new Circle(ctx, {
     type: Constants.geojsonTypes.FEATURE,
-    properties: {},
+    properties: {
+      circle: true
+    },
     geometry: {
       type: Constants.geojsonTypes.POLYGON,
       coordinates: [[]]
@@ -67,7 +34,7 @@ module.exports = function(ctx) {
         if (currentVertexPosition === 0) return
         const radius = distance(polygon.center[1], polygon.center[0], e.lngLat.lat, e.lngLat.lng)
         const coords = createGeoJSONCircle(polygon.center, radius)
-        polygon.radius = [e.lngLat.lng, e.lngLat.lat]
+        polygon.radius = radius
         polygon.setCoordinates([coords])
         currentVertexPosition = coords.length
         if (CommonSelectors.isVertex(e)) {

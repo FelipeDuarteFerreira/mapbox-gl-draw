@@ -19,4 +19,11 @@ var Circle = function(ctx, geojson) {
 
 Circle.prototype = Object.create(Polygon.prototype);
 
+Circle.prototype.updateCenter = function (delta) {
+  this.center = [
+    this.center[0] + delta.lng,
+    this.center[1] + delta.lat
+  ]
+}
+
 module.exports = Circle;
