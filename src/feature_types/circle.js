@@ -1,4 +1,5 @@
 var Polygon = require('./polygon');
+const createGeoJSONCircle = require("../lib/create_geo_json_circle")
 
 var Circle = function(ctx, geojson) {
   Polygon.call(this, ctx, geojson);
@@ -24,6 +25,9 @@ Circle.prototype.updateCenter = function (delta) {
     this.center[0] + delta.lng,
     this.center[1] + delta.lat
   ]
+
+  const coords = createGeoJSONCircle([this.center[0], this.center[1]], this.radius)
+  this.setCoordinates([coords])
 }
 
 module.exports = Circle;
