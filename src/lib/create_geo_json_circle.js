@@ -1,23 +1,22 @@
-module.exports = function(center, km, points = 128) {
-   const coords = {
-     latitude: center[1],
-     longitude: center[0]
-   };
+module.exports = function (coordinates, radius) {
+  const degrees_between_points = 6.0
+  const number_of_points = Math.floor(360/degrees_between_points)
+  const dist_radians = radius / 6250
+  const center_lat_radians = coordinates[1] * Math.PI / 180
+  const center_lon_radians = coordinates[0] * Math.PI / 180
+  const polygon_coordinates = []
 
-   const ret = [];
-   const distanceX = km / (111.320 * Math.cos(coords.latitude * Math.PI / 180));
-   const distanceY = km / 110.574;
+  for (let index = 0; index < number_of_points; index++) {
+    const degrees = index * degrees_between_points
+    const degree_radians = degrees * Math.PI / 180
+    const point_lat_radians = Math.asin(Math.sin(center_lat_radians) * Math.cos(dist_radians) + Math.cos(center_lat_radians) * Math.sin(dist_radians) * Math.cos(degree_radians))
+    const point_lon_radians = center_lon_radians + Math.atan2(Math.sin(degree_radians) * Math.sin(dist_radians) * Math.cos(center_lat_radians), Math.cos(dist_radians) - Math.sin(center_lat_radians) * Math.sin(point_lat_radians))
+    const point_lat = point_lat_radians * 180 / Math.PI
+    const point_lon = point_lon_radians * 180 / Math.PI
+    const point = [point_lon, point_lat]
+    polygon_coordinates.push(point)
+  }
+  polygon_coordinates.push(polygon_coordinates[0])
+  return polygon_coordinates
 
-   let theta, x, y;
-   for (var i = 0; i < points; i++) {
-     theta = (i / points) * (2 * Math.PI);
-     x = distanceX * Math.cos(theta);
-     y = distanceY * Math.sin(theta);
-     ret.push([
-       coords.longitude + x,
-       coords.latitude + y
-     ]);
-   }
-   ret.push(ret[0]);
-   return ret
-};
+}
