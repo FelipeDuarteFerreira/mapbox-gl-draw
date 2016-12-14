@@ -267,10 +267,12 @@ module.exports = function(ctx, options = {}) {
       geojson.properties.active = (ctx.store.isSelected(geojson.properties.id))
         ? Constants.activeStates.ACTIVE
         : Constants.activeStates.INACTIVE;
+      geojson.properties.parent_class = ctx.store.get(geojson.properties.id).properties.class
       push(geojson);
       fireActionable();
       if (geojson.properties.active !== Constants.activeStates.ACTIVE
         || geojson.geometry.type === Constants.geojsonTypes.POINT) return;
+
       createSupplementaryPoints(geojson).forEach(push);
     },
     trash: function() {

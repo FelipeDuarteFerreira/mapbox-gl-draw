@@ -12,7 +12,8 @@ module.exports = function(ctx) {
   const polygon = new Circle(ctx, {
     type: Constants.geojsonTypes.FEATURE,
     properties: {
-      circle: true
+      circle: true,
+      class: Constants.types.CIRCLE
     },
     geometry: {
       type: Constants.geojsonTypes.POLYGON,
@@ -92,6 +93,7 @@ module.exports = function(ctx) {
 
     render(geojson, callback) {
       const isActivePolygon = geojson.properties.id === polygon.id;
+      const parentClass = polygon.properties.class
       geojson.properties.active = (isActivePolygon) ? Constants.activeStates.ACTIVE : Constants.activeStates.INACTIVE;
       if (!isActivePolygon) return callback(geojson);
 
@@ -110,9 +112,9 @@ module.exports = function(ctx) {
       if (coordinateCount > 4) {
         // Add a start position marker to the map, clicking on this will finish the feature
         // This should only be shown when we're in a valid spot
-        callback(createVertex(polygon.id, geojson.geometry.coordinates[0][0], '0.0', false));
+        callback(createVertex(polygon.id, geojson.geometry.coordinates[0][0], '0.0', false, parentClass));
         let endPos = geojson.geometry.coordinates[0].length - 3;
-        callback(createVertex(polygon.id, geojson.geometry.coordinates[0][endPos], `0.${endPos}`, false));
+        callback(createVertex(polygon.id, geojson.geometry.coordinates[0][endPos], `0.${endPos}`, false, parentClass));
       }
 
       // If we have more than two positions (plus the closer),

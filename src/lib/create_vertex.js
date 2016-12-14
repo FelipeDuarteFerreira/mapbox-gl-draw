@@ -11,14 +11,15 @@ const Constants = require('../constants');
  * @param {boolean} selected
  * @return {GeoJSON} Point
  */
-module.exports = function(parentId, coordinates, path, selected) {
+module.exports = function(parentId, coordinates, path, selected, parentClass) {
   return {
     type: Constants.geojsonTypes.FEATURE,
     properties: {
       meta: Constants.meta.VERTEX,
       parent: parentId,
       coord_path: path,
-      active: (selected) ? Constants.activeStates.ACTIVE : Constants.activeStates.INACTIVE
+      active: (selected) ? Constants.activeStates.ACTIVE : Constants.activeStates.INACTIVE,
+      parent_class: parentClass
     },
     geometry: {
       type: Constants.geojsonTypes.POINT,

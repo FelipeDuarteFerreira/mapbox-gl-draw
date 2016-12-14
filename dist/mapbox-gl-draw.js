@@ -4671,9 +4671,10 @@ module.exports = function (ctx) {
 };
 
 },{"./constants":24,"./lib/get_features_and_set_cursor":42,"./lib/is_click":43,"./lib/mode_handler":46,"./modes/direct_select":56,"./modes/draw_circle":57,"./modes/draw_line_string":58,"./modes/draw_point":59,"./modes/draw_polygon":60,"./modes/simple_select":61,"./modes/static":62}],26:[function(require,module,exports){
-"use strict";
+'use strict';
 
 var Polygon = require('./polygon');
+var Constants = require('../constants');
 var createGeoJSONCircle = require("../lib/create_geo_json_circle");
 
 var Circle = function Circle(ctx, geojson) {
@@ -4683,7 +4684,8 @@ var Circle = function Circle(ctx, geojson) {
     var geoJSON = toGeoJSON();
     return Object.assign({}, geoJSON, {
       properties: Object.assign({}, this.properties, {
-        circle: true
+        circle: true,
+        class: Constants.types.CIRCLE
       }),
       geometry: Object.assign({}, geoJSON.geometry, {
         center: this.center,
@@ -4704,7 +4706,7 @@ Circle.prototype.updateCenter = function (delta) {
 
 module.exports = Circle;
 
-},{"../lib/create_geo_json_circle":34,"./polygon":31}],27:[function(require,module,exports){
+},{"../constants":24,"../lib/create_geo_json_circle":34,"./polygon":31}],27:[function(require,module,exports){
 'use strict';
 
 var hat = require('hat');
@@ -5216,6 +5218,7 @@ function createSupplementaryPoints(geojson) {
       type = _geojson$geometry.type,
       coordinates = _geojson$geometry.coordinates;
 
+  var parentClass = geojson.properties.parent_class;
   var featureId = geojson.properties && geojson.properties.id;
 
   var supplementaryPoints = [];
@@ -5240,7 +5243,7 @@ function createSupplementaryPoints(geojson) {
     var lastVertex = null;
     line.forEach(function (point, pointIndex) {
       var pointPath = lineBasePath != undefined ? lineBasePath + '.' + pointIndex : String(pointIndex);
-      var vertex = createVertex(featureId, point, pointPath, isSelectedPath(pointPath));
+      var vertex = createVertex(featureId, point, pointPath, isSelectedPath(pointPath), parentClass);
 
       // If we're creating midpoints, check if there was a
       // vertex before this one. If so, add a midpoint
@@ -5310,14 +5313,15 @@ var Constants = require('../constants');
  * @param {boolean} selected
  * @return {GeoJSON} Point
  */
-module.exports = function (parentId, coordinates, path, selected) {
+module.exports = function (parentId, coordinates, path, selected, parentClass) {
   return {
     type: Constants.geojsonTypes.FEATURE,
     properties: {
       meta: Constants.meta.VERTEX,
       parent: parentId,
       coord_path: path,
-      active: selected ? Constants.activeStates.ACTIVE : Constants.activeStates.INACTIVE
+      active: selected ? Constants.activeStates.ACTIVE : Constants.activeStates.INACTIVE,
+      parent_class: parentClass
     },
     geometry: {
       type: Constants.geojsonTypes.POINT,
@@ -6195,7 +6199,8 @@ module.exports = function (ctx) {
   var polygon = new Circle(ctx, {
     type: Constants.geojsonTypes.FEATURE,
     properties: {
-      circle: true
+      circle: true,
+      class: Constants.types.CIRCLE
     },
     geometry: {
       type: Constants.geojsonTypes.POLYGON,
@@ -6275,6 +6280,7 @@ module.exports = function (ctx) {
 
     render: function render(geojson, callback) {
       var isActivePolygon = geojson.properties.id === polygon.id;
+      var parentClass = polygon.properties.class;
       geojson.properties.active = isActivePolygon ? Constants.activeStates.ACTIVE : Constants.activeStates.INACTIVE;
       if (!isActivePolygon) return callback(geojson);
 
@@ -6293,9 +6299,9 @@ module.exports = function (ctx) {
       if (coordinateCount > 4) {
         // Add a start position marker to the map, clicking on this will finish the feature
         // This should only be shown when we're in a valid spot
-        callback(createVertex(polygon.id, geojson.geometry.coordinates[0][0], '0.0', false));
+        callback(createVertex(polygon.id, geojson.geometry.coordinates[0][0], '0.0', false, parentClass));
         var endPos = geojson.geometry.coordinates[0].length - 3;
-        callback(createVertex(polygon.id, geojson.geometry.coordinates[0][endPos], '0.' + endPos, false));
+        callback(createVertex(polygon.id, geojson.geometry.coordinates[0][endPos], '0.' + endPos, false, parentClass));
       }
 
       // If we have more than two positions (plus the closer),
@@ -6899,9 +6905,11 @@ module.exports = function (ctx) {
     },
     render: function render(geojson, push) {
       geojson.properties.active = ctx.store.isSelected(geojson.properties.id) ? Constants.activeStates.ACTIVE : Constants.activeStates.INACTIVE;
+      geojson.properties.parent_class = ctx.store.get(geojson.properties.id).properties.class;
       push(geojson);
       fireActionable();
       if (geojson.properties.active !== Constants.activeStates.ACTIVE || geojson.geometry.type === Constants.geojsonTypes.POINT) return;
+
       createSupplementaryPoints(geojson).forEach(push);
     },
     trash: function trash() {
