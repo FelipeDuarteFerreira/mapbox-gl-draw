@@ -4,7 +4,8 @@ const Constants = require('../constants');
 
 function createSupplementaryPoints(geojson, options = {}, basePath = null) {
   const { type, coordinates } = geojson.geometry;
-  const featureId = geojson.properties && geojson.properties.id;
+  const parentClass = geojson.properties.parent_class
+  let featureId = geojson.properties && geojson.properties.id;
 
   let supplementaryPoints = [];
 
@@ -27,8 +28,8 @@ function createSupplementaryPoints(geojson, options = {}, basePath = null) {
     let firstPointString = '';
     let lastVertex = null;
     line.forEach((point, pointIndex) => {
-      const pointPath = (lineBasePath !== undefined && lineBasePath !== null) ? `${lineBasePath}.${pointIndex}` : String(pointIndex);
-      const vertex = createVertex(featureId, point, pointPath, isSelectedPath(pointPath));
+      const pointPath = (lineBasePath != undefined) ? `${lineBasePath}.${pointIndex}` : String(pointIndex);
+      const vertex = createVertex(featureId, point, pointPath, isSelectedPath(pointPath), parentClass);
 
       // If we're creating midpoints, check if there was a
       // vertex before this one. If so, add a midpoint

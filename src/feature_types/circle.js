@@ -1,4 +1,5 @@
 var Polygon = require('./polygon');
+const Constants = require('../constants');
 const createGeoJSONCircle = require("../lib/create_geo_json_circle")
 
 var Circle = function(ctx, geojson) {
@@ -8,7 +9,8 @@ var Circle = function(ctx, geojson) {
     const geoJSON = toGeoJSON()
     return Object.assign({}, geoJSON, {
       properties: Object.assign({}, this.properties, {
-        circle: true
+        circle: true,
+        class: Constants.types.CIRCLE
       }),
       geometry: Object.assign({}, geoJSON.geometry, {
         center: this.center,
