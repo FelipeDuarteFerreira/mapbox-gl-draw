@@ -30,7 +30,7 @@ module.exports = function(ctx) {
       ctx.store.clearSelected();
       doubleClickZoom.disable(ctx);
       ctx.ui.queueMapClasses({ mouse: Constants.cursors.ADD });
-      ctx.ui.setActiveButton(Constants.types.POLYGON);
+      ctx.ui.setActiveButton(Constants.types.CIRCLE);
       this.on('mousemove', CommonSelectors.true, e => {
         if (currentVertexPosition === 0) return
         const radius = distance(polygon.center[1], polygon.center[0], e.lngLat.lat, e.lngLat.lng)
