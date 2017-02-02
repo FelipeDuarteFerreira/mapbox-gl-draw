@@ -8,6 +8,7 @@ const Constants = require('./constants');
 const StringSet = require('./lib/string_set');
 
 const featureTypes = {
+  Circle: require('./feature_types/circle'),
   Polygon: require('./feature_types/polygon'),
   LineString: require('./feature_types/line_string'),
   Point: require('./feature_types/point'),
@@ -86,11 +87,15 @@ module.exports = function(ctx, api) {
 
       if (ctx.store.get(feature.id) === undefined || ctx.store.get(feature.id).type !== feature.geometry.type) {
         // If the feature has not yet been created ...
-        const Model = featureTypes[feature.geometry.type];
+        const Model = featureTypes[feature.properties.circle ? "Circle" : feature.geometry.type];
         if (Model === undefined) {
           throw new Error(`Invalid geometry type: ${feature.geometry.type}.`);
         }
         const internalFeature = new Model(ctx, feature);
+        if (feature.properties.circle) {
+          internalFeature.center = feature.geometry.center
+          internalFeature.radius = feature.geometry.radius
+        }
         ctx.store.add(internalFeature);
       } else {
         // If a feature of that id has already been created, and we are swapping it out ...
